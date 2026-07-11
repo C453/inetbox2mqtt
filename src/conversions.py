@@ -4,13 +4,13 @@ def celsius_to_fahrenheit(celsius):
     if celsius == 0 or celsius == 200:
         return int(celsius)
     f = round(celsius * 9.0 / 5.0 + 32.0, 1)
-    return int(f) if f.is_integer() else f
+    return int(f) if int(f) == f else f
 
 def fahrenheit_to_celsius(fahrenheit):
     if fahrenheit == 0 or fahrenheit == 200:
         return int(fahrenheit)
     c = round((fahrenheit - 32.0) * 5.0 / 9.0, 1)
-    return int(c) if c.is_integer() else c
+    return int(c) if int(c) == c else c
 
 def bool_to_int(value):
     return int(value)
