@@ -153,22 +153,22 @@ class Connect():
         
     def gen_cred_json(self):
 
-         j = {
-         "SSID": ["text", "SSID:", "1"],
-         "WIFIPW": ["password", "Wifi passcode:", "2"],
-         "MQTT": ["text", "Broker name/IP:", "3"],
-         "PORT": ["text", "Broker port (1883):", "4"],
-         "UN": ["text", "Broker User:", "5"],
-         "UPW": ["text", "Broker password:", "6"],
-         "HOSTNAME": ["text", "Hostname:", "7"],
-         "LAN": ["checkbox", "LAN Support :", "8"],
-         "STATIC": ["checkbox", "Static IP :", "9"],
-         "IP": ["text", "IP (static):", "A"],
-         "TOPIC": ["text", "Topic prefix (instead of truma):", "B"],
-         "ADC": ["checkbox", "Addon DuoControl :", "C"],
-         "ASL": ["checkbox", "Addon SpiritLevel:", "D"],
-         "TEMP_UNIT": ["text", "Temperature unit (C/F):", "E"],
-         }
+        j = {
+            "SSID": ["text", "SSID:", "1"],
+            "WIFIPW": ["password", "Wifi passcode:", "2"],
+            "MQTT": ["text", "Broker name/IP:", "3"],
+            "PORT": ["text", "Broker port (1883):", "4"],
+            "UN": ["text", "Broker User:", "5"],
+            "UPW": ["text", "Broker password:", "6"],
+            "HOSTNAME": ["text", "Hostname:", "7"],
+            "LAN": ["checkbox", "LAN Support :", "8"],
+            "STATIC": ["checkbox", "Static IP :", "9"],
+            "IP": ["text", "IP (static):", "A"],
+            "TOPIC": ["text", "Topic prefix (instead of truma):", "B"],
+            "ADC": ["checkbox", "Addon DuoControl :", "C"],
+            "ASL": ["checkbox", "Addon SpiritLevel:", "D"],
+            "TEMP_UNIT": ["text", "Temperature unit (C/F):", "E"],
+        }
         with open(self.CRED_JSON, "w") as f: json.dump(j, f)
 
     def read_cred_json(self):
