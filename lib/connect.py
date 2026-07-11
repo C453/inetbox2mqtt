@@ -153,7 +153,7 @@ class Connect():
         
     def gen_cred_json(self):
 
-        j = {
+         j = {
          "SSID": ["text", "SSID:", "1"],
          "WIFIPW": ["password", "Wifi passcode:", "2"],
          "MQTT": ["text", "Broker name/IP:", "3"],
@@ -167,6 +167,7 @@ class Connect():
          "TOPIC": ["text", "Topic prefix (instead of truma):", "B"],
          "ADC": ["checkbox", "Addon DuoControl :", "C"],
          "ASL": ["checkbox", "Addon SpiritLevel:", "D"],
+         "TEMP_UNIT": ["text", "Temperature unit (C/F):", "E"],
          }
         with open(self.CRED_JSON, "w") as f: json.dump(j, f)
 

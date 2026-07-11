@@ -60,7 +60,7 @@ class Lin:
     BUFFER_HEADER_WRITE = bytes([0x0C, 0x32])
 
 
-    def __init__(self, serial, pin_map, lin_debug, inet_debug):
+    def __init__(self, serial, pin_map, lin_debug, inet_debug, temp_unit = "C"):
         self.loop_state = False
         self.serial = serial
         self.pin_map = pin_map
@@ -68,7 +68,7 @@ class Lin:
         if lin_debug:
             self.log.setLevel(logging.DEBUG)
         self.lin_debug = lin_debug    
-        self.app = inetboxapp.InetboxApp(inet_debug)
+        self.app = inetboxapp.InetboxApp(inet_debug, temp_unit=temp_unit)
         self.pin_map.set_led("lin_led", False)
         print("Lin initialized")
 

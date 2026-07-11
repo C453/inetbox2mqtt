@@ -288,15 +288,27 @@ class InetboxApp:
     upload_wait = 1
     reflect = True
 
+    TEMP_KEYS = {
+        "target_temp_room",
+        "target_temp_water",
+        "target_temp_aircon",
+        "current_temp_room",
+        "current_temp_water",
+        "timer_target_temp_room",
+        "timer_target_temp_water",
+    }
+
     display_status = {}
     log = logging.getLogger(__name__)
 
-    def __init__(self, debug, reflect = True):
+    def __init__(self, debug, reflect = True, temp_unit = "C"):
         # when requested, set logger to debug level
         if debug:
             self.log.setLevel(logging.DEBUG)
         self.log.debug(f"Status: {self.status}")
         self.reflect = reflect
+        self.temp_unit = temp_unit.upper()
+        self.log.info(f"Temperature unit: {self.temp_unit}")
 
     def map_or_debug(self, mapping, value):
         if value in mapping:
@@ -574,7 +586,10 @@ class InetboxApp:
             raise Exception(f"Conversion function not defined - this key {key} isn't defined?")
         if self.STATUS_CONVERSION_FUNCTIONS[key] is None:
            raise Exception(f"Conversion function not defined - this key {key} isn't readable")
-        return self.STATUS_CONVERSION_FUNCTIONS[key][0](self.status[key][0])
+        result = self.STATUS_CONVERSION_FUNCTIONS[key][0](self.status[key][0])
+        if self.temp_unit == "F" and key in self.TEMP_KEYS:
+            result = str(cnv.celsius_to_fahrenheit(float(result)))
+        return result
 
 
     def set_status(self, key, value):
@@ -582,6 +597,8 @@ class InetboxApp:
             raise Exception(f"Conversion function not defined - this key {key} isn't defined?")
         if self.STATUS_CONVERSION_FUNCTIONS[key] is None:
             raise Exception(f"Conversion function not defined - this key {key} isn't writeable?")
+        if self.temp_unit == "F" and key in self.TEMP_KEYS:
+            value = str(cnv.fahrenheit_to_celsius(float(value)))
 #        self.log.info(f"Setting {key} to {value}")
         self.log.debug(f"set_status: {key}:{value}")
         old_data = self.status[key][0]

@@ -38,7 +38,24 @@ Furthermore, the operating modes of the TRUMA (gas, mixed, electric) can be pres
 
 
 ## Celsius vs. Fahrenheit
-This example works only if CPplus and Home Assistant are set to Celsius. Initial tests with systems set to Fahrenheit show problems. If someone could send their approaches to solving this, that would be great.
+
+The example YAML files work when CPplus and Home Assistant are set to Celsius. Fahrenheit is now also supported.
+
+### Fahrenheit Configuration
+
+To use Fahrenheit, all three components must be set to Fahrenheit:
+
+1. **CPplus display**: Set to Fahrenheit via the CPplus menu
+2. **inetbox2mqtt firmware**: Set `TEMP_UNIT` to `"F"` in the credentials (via the web configuration page, or by re-creating `cred.json` and re-entering all credentials)
+3. **Home Assistant**: Set your HA unit system to Fahrenheit (Configuration → General → Unit System)
+
+When `TEMP_UNIT` is set to `"F"` in the firmware, the MQTT temperature values will be published in Fahrenheit, and the Home Assistant auto-discovery entities will use `°F`. The MQTT bridge handles the Celsius↔Fahrenheit conversion transparently.
+
+### Fahrenheit YAML Files
+
+Use `truma_f.yaml` and `aventa_f.yaml` instead of `truma.yaml` and `aventa.yaml`. These have all hardcoded temperature thresholds (climate min/max, water mode temperatures, automation numeric comparisons) converted to Fahrenheit.
+
+If your Home Assistant instance runs Celsius but your CPplus is set to Fahrenheit (or vice versa), it may be easier to set both to Celsius and use the original YAML files.
 
 ## ESPHOME version
 For all those who are looking for an ESPHome version, I would like to refer to the great work of Fabian [esphome-truma_inetbox](https://github.com/Fabian-Schmidt/esphome-truma_inetbox), who has managed the realisation in this framework. Here, the MQTT protocol is no longer necessary, but it works via the HA-internal protocol.

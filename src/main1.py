@@ -37,6 +37,34 @@ from machine import UART, Pin, I2C, soft_reset
 
 log = logging.getLogger(__name__)
 
+def _convert_temp_list(celsius_values, to_fahrenheit):
+    result = []
+    for v in celsius_values:
+        if v == 0:
+            result.append("0")
+        elif v == 200:
+            result.append("200")
+        elif to_fahrenheit:
+            result.append(str(round(v * 9.0 / 5.0 + 32.0)))
+        else:
+            result.append(str(v))
+    return result
+
+def _get_room_temp_options(temp_unit):
+    celsius = [0, 10, 15, 18, 20, 21, 22]
+    options = _convert_temp_list(celsius, temp_unit == "F")
+    return str(options).replace("'", '"')
+
+def _get_aircon_temp_options(temp_unit):
+    celsius = [16, 18, 20, 22, 24, 26, 28]
+    options = _convert_temp_list(celsius, temp_unit == "F")
+    return str(options).replace("'", '"')
+
+def _get_water_temp_options(temp_unit):
+    celsius = [0, 40, 60, 200]
+    options = _convert_temp_list(celsius, temp_unit == "F")
+    return str(options).replace("'", '"')
+
 # define global objects - important for processing
 connect = None
 lin = None
@@ -55,7 +83,7 @@ HA_CONFIG	= ''
 
 
 
-def set_prefix(topic):
+def set_prefix(topic, temp_unit="C"):
     global topic_root
     global S_TOPIC_1
     global S_TOPIC_2
@@ -64,6 +92,8 @@ def set_prefix(topic):
     global HA_STOPIC
     global HA_CTOPIC
     global HA_CONFIG
+    
+    unit = "°C" if temp_unit == "C" else "°F"
     
     topic_root = topic
     S_TOPIC_1       = 'service/' + topic_root + '/set/'
@@ -80,11 +110,11 @@ def set_prefix(topic):
     HA_CONFIG = {
         "alive":                 ['homeassistant/binary_sensor/' + topic_root + '/alive/config', '{"name": "' + topic_root + '_alive", "model": "' + HA_MODEL + '", "sw_version": "' + HA_SWV + '", "device_class": "running", "state_topic": "' + HA_STOPIC + 'alive"}'],
         "release":               ['homeassistant/sensor/release/config', '{"name": "' + topic_root + '_release", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'release"}'],
-        "current_temp_room":     ['homeassistant/sensor/current_temp_room/config', '{"name": "' + topic_root + '_current_temp_room", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "°C", "state_topic": "' + HA_STOPIC + 'current_temp_room"}'],
-        "current_temp_water":    ['homeassistant/sensor/current_temp_water/config', '{"name": "' + topic_root + '_current_temp_water", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "°C", "state_topic": "' + HA_STOPIC + 'current_temp_water"}'],
-        "target_temp_room":      ['homeassistant/sensor/target_temp_room/config', '{"name": "' + topic_root + '_target_temp_room", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "°C", "state_topic": "' + HA_STOPIC + 'target_temp_room"}'],
-        "target_temp_aircon":    ['homeassistant/sensor/target_temp_aircon/config', '{"name": "' + topic_root + '_target_temp_aircon", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "°C", "state_topic": "' + HA_STOPIC + 'target_temp_aircon"}'],
-        "target_temp_water":     ['homeassistant/sensor/target_temp_water/config', '{"name": "' + topic_root + '_target_temp_water", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "°C", "state_topic": "' + HA_STOPIC + 'target_temp_water"}'],
+        "current_temp_room":     ['homeassistant/sensor/current_temp_room/config', '{"name": "' + topic_root + '_current_temp_room", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "' + unit + '", "state_topic": "' + HA_STOPIC + 'current_temp_room"}'],
+        "current_temp_water":    ['homeassistant/sensor/current_temp_water/config', '{"name": "' + topic_root + '_current_temp_water", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "' + unit + '", "state_topic": "' + HA_STOPIC + 'current_temp_water"}'],
+        "target_temp_room":      ['homeassistant/sensor/target_temp_room/config', '{"name": "' + topic_root + '_target_temp_room", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "' + unit + '", "state_topic": "' + HA_STOPIC + 'target_temp_room"}'],
+        "target_temp_aircon":    ['homeassistant/sensor/target_temp_aircon/config', '{"name": "' + topic_root + '_target_temp_aircon", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "' + unit + '", "state_topic": "' + HA_STOPIC + 'target_temp_aircon"}'],
+        "target_temp_water":     ['homeassistant/sensor/target_temp_water/config', '{"name": "' + topic_root + '_target_temp_water", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "device_class": "temperature", "unit_of_measurement": "' + unit + '", "state_topic": "' + HA_STOPIC + 'target_temp_water"}'],
         "energy_mix":            ['homeassistant/sensor/energy_mix/config', '{"name": "' + topic_root + '_energy_mix", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'energy_mix"}'],
         "el_power_level":        ['homeassistant/sensor/el_level/config', '{"name": "' + topic_root + '_el_power_level", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'el_power_level"}'],
         "heating_mode":          ['homeassistant/sensor/heating_mode/config', '{"name": "' + topic_root + '_heating_mode", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'heating_mode"}'],
@@ -94,9 +124,9 @@ def set_prefix(topic):
         "operating_status":      ['homeassistant/sensor/operating_status/config', '{"name": "' + topic_root + '_operating_status", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'operating_status"}'],
         "error_code":            ['homeassistant/sensor/error_code/config', '{"name": "' + topic_root + '_error_code", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'error_code"}'],
         "clock":                 ['homeassistant/sensor/clock/config', '{"name": "' + topic_root + '_clock", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "state_topic": "' + HA_STOPIC + 'clock"}'],
-        "set_target_temp_room":  ['homeassistant/select/target_temp_room/config', '{"name": "' + topic_root + '_set_roomtemp", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_room", "options": ["0", "10", "15", "18", "20", "21", "22"] }'],
-        "set_target_temp_aircon":['homeassistant/select/target_temp_aircon/config', '{"name": "' + topic_root + '_set_aircontemp", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_aircon", "options": ["16", "18", "20", "22", "24", "26", "28"] }'],
-        "set_target_temp_water": ['homeassistant/select/target_temp_water/config', '{"name": "' + topic_root + '_set_warmwater", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_water", "options": ["0", "40", "60", "200"] }'],
+        "set_target_temp_room":  ['homeassistant/select/target_temp_room/config', '{"name": "' + topic_root + '_set_roomtemp", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_room", "options": ' + _get_room_temp_options(temp_unit) + ' }'],
+        "set_target_temp_aircon":['homeassistant/select/target_temp_aircon/config', '{"name": "' + topic_root + '_set_aircontemp", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_aircon", "options": ' + _get_aircon_temp_options(temp_unit) + ' }'],
+        "set_target_temp_water": ['homeassistant/select/target_temp_water/config', '{"name": "' + topic_root + '_set_warmwater", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'target_temp_water", "options": ' + _get_water_temp_options(temp_unit) + ' }'],
         "set_heating_mode":      ['homeassistant/select/heating_mode/config', '{"name": "' + topic_root + '_set_heating_mode", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'heating_mode", "options": ["off", "eco", "high"] }'],
         "set_aircon_mode":       ['homeassistant/select/aircon_mode/config', '{"name": "' + topic_root + '_set_aircon_mode", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'aircon_operating_mode", "options": ["off", "vent", "cool", "hot", "auto"] }'],
         "set_vent_mode":         ['homeassistant/select/vent_mode/config', '{"name": "' + topic_root + '_set_vent_mode", "model": "' + HA_MODEL + '", "sw_version":"' + HA_SWV + '", "command_topic": "' + HA_CTOPIC + 'aircon_vent_mode", "options": ["low", "mid", "high", "night", "auto"] }'],
@@ -301,6 +331,14 @@ def run(w, lin_debug, inet_debug, mqtt_debug, logfile):
     cred = connect.read_json_creds()
     activate_duoControl  = (cred["ADC"] == "1")
     activate_spiritlevel = (cred["ASL"] == "1")
+    temp_unit = cred.get("TEMP_UNIT", "C")
+    if temp_unit == "0" or temp_unit == "":
+        temp_unit = "C"
+    temp_unit = temp_unit.upper()
+    if temp_unit not in ("C", "F"):
+        temp_unit = "C"
+    log.info(f"Temperature unit from config: {temp_unit}")
+    set_prefix(topic_root, temp_unit)
         
     if mqtt_debug:
         log.setLevel(logging.DEBUG)
@@ -338,11 +376,11 @@ def run(w, lin_debug, inet_debug, mqtt_debug, logfile):
         sl = spirit_level(i2c)
         
     # Initialize the lin-object
-    lin = Lin(serial, w.p, lin_debug, inet_debug)
+    lin = Lin(serial, w.p, lin_debug, inet_debug, temp_unit)
     if cred["TOPIC"] != "":
         topic_root = cred["TOPIC"]
         
-    set_prefix(topic_root)
+    set_prefix(topic_root, temp_unit)
     log.info(f"prefix: '{topic_root}' set: {S_TOPIC_1} rec: {Pub_Prefix}")
     connect.config.set_last_will("service/" + topic_root + "/control_status/alive", "OFF", retain=True, qos=0)  # last will is important
     connect.set_proc(subscript = callback, connect = conn_callback)
