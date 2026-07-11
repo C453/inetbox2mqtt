@@ -138,7 +138,7 @@ def set_prefix(topic, temp_unit="C"):
     }
 
 # Universal callback function for all subscriptions
-def callback(topic, msg, retained, qos):
+async def callback(topic, msg, retained, qos):
     global connect
     log.debug(f"received: {topic}: {msg}")
     topic = str(topic)

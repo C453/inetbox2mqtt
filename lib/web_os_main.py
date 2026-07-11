@@ -73,8 +73,16 @@ def run(w, lin_debug, inet_debug, webos_debug, naw_debug, logfile):
 #     else:
 #         log.debug("No compatible Board found!")
         
+    cred = w.read_json_creds()
+    temp_unit = cred.get("TEMP_UNIT", "C")
+    if temp_unit == "0" or temp_unit == "":
+        temp_unit = "C"
+    temp_unit = temp_unit.upper()
+    if temp_unit not in ("C", "F"):
+        temp_unit = "C"
+        
     # Initialize the lin-object
-    lin = Lin(serial, w.p, lin_debug, inet_debug)
+    lin = Lin(serial, w.p, lin_debug, inet_debug, temp_unit)
     os.init(w, lin, naw, webos_debug, logfile)
 
     naw.STATIC_DIR = "/"
